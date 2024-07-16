@@ -7,7 +7,6 @@ app.use(express.static('public'));
 
 let agents = [];
 let mutedAgents = {};
-
 const images = [
   'https://images.shoutwiki.com/lego/d/df/Pepper_Roni.jpg',
   'https://images.shoutwiki.com/lego/d/db/Infomaniac2.jpg',
@@ -29,10 +28,8 @@ io.on('connection', (socket) => {
         image: images[Math.floor(Math.random() * images.length)]
       };
       socket.emit('agent', agent);
-
       // broadcast the agent to all other clients
       socket.broadcast.emit('agent', agent);
-
       // add agent to agents list
       agents.push(agent);
     }
@@ -73,6 +70,19 @@ io.on('connection', (socket) => {
     console.log('a user disconnected');
     agents = agents.filter((a) => a.id !== socket.id);
   });
+
+  // handle room info
+  socket.on('roomInfo', (data) => {
+    io.emit('roomInfo', data);
+  });
+
+  // send room info to clients
+  setInterval(() => {
+    const roomId = 'default'; // replace with actual room id
+    const roomInfo = 'room is public'; // replace with actual room info
+    const memberCount = agents.length;
+    io.emit('roomInfo', { roomId, roomInfo, memberCount });
+  }, 1000);
 });
 
 server.listen(3000, () => {
