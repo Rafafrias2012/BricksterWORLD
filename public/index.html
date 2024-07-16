@@ -78,6 +78,20 @@
       font-size: 12px;
       display: none;
     }
+    #room-info-container {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #000;
+  font-size: 12px;
+}
+
+#room-id, #room-info, #member-count {
+  display: block;
+  margin-bottom: 5px;
+}
   </style>
 </head>
 <body>
@@ -90,6 +104,11 @@
     <input id="chat-input" type="text" placeholder="Type a message...">
     <button id="chat-send-btn">Send</button>
   </div>
+  <div id="room-info-container">
+  <span id="room-id">Room ID: <span id="room-id-value"></span></span>
+  <span id="room-info">Room Info: <span id="room-info-value"></span></span>
+  <span id="member-count">Members: <span id="member-count-value">0</span></span>
+</div>
   <div id="mini-map-container" class="mini-map"></div>
   <div id="context-menu-container" class="context-menu">
     <ul>
@@ -181,6 +200,12 @@
           speechBubbleElement.style.display = 'none';
         }, 2000);
       });
+
+      socket.on('roomInfo', (data) => {
+  document.getElementById('room-id-value').textContent = data.roomId;
+  document.getElementById('room-info-value').textContent = data.roomInfo;
+  document.getElementById('member-count-value').textContent = data.memberCount;
+});
 
       document.getElementById('game-container').addEventListener('mousedown', (event) => {
         const agentElement = event.target;
