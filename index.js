@@ -10,7 +10,17 @@ let mutedAgents = {};
 const images = [
   'https://images.shoutwiki.com/lego/d/df/Pepper_Roni.jpg',
   'https://images.shoutwiki.com/lego/d/db/Infomaniac2.jpg',
-  'https://images.shoutwiki.com/lego/1/1d/Brickster.jpg'
+  'https://images.shoutwiki.com/lego/1/1d/Brickster.jpg',
+  'https://images.shoutwiki.com/lego/thumb/3/3a/Bill_Ding_LI1.png/250px-Bill_Ding_LI1.png',
+  'https://images.shoutwiki.com/lego/a/ad/CD_Rom.png',
+  'https://images.shoutwiki.com/lego/thumb/0/0e/DrClickitt.png/250px-DrClickitt.png',
+  'https://images.shoutwiki.com/lego/7/7f/Jotc.jpg',
+  'https://images.shoutwiki.com/lego/thumb/1/18/Laura_Brick.png/250px-Laura_Brick.png',
+  'https://images.shoutwiki.com/lego/thumb/a/a2/MBrickolini.jpg/250px-MBrickolini.jpg',
+  'https://images.shoutwiki.com/lego/9/9b/Nickbrick.gif',
+  'https://images.shoutwiki.com/lego/thumb/4/42/Papa.jpg/250px-Papa.jpg',
+  'https://images.shoutwiki.com/lego/6/6b/Enter.jpg',
+  'https://images.shoutwiki.com/lego/5/5f/Return.jpg'
 ];
 
 io.on('connection', (socket) => {
