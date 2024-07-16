@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BricksterWORLD</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .agent {
+      position: absolute;
+      width: 113.5px;
+      height: 187px;
+      background-size: 113.5px 187px;
+      background-repeat: no-repeat;
+      cursor: move;
+    }
+    .nametag {
+      position: absolute;
+      font-size: 12px;
+      color: #fff;
+      text-shadow: 1px 1px 1px #000;
+      top: -15px;
+      left: 0;
+      text-align: center;
+      width: 50px;
+    }
+    .speech-bubble {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #000;
+      padding: 5px;
+      border-radius: 10px;
+      font-size: 12px;
+      top: -30px;
+      left: 0;
+      text-align: center;
+      width: 100px;
+      display: none;
+    }
+    .chatbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 30px;
+      background-color: #fff;
+      border: 1px solid #000;
+      padding: 5px;
+      font-size: 12px;
+    }
+    .mini-map {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 150px;
+      height: 150px;
+      border: 1px solid #000;
+      background-color: #fff;
+    }
+    .mini-map-agent {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #000;
+      border-radius: 50%;
+    }
+    .context-menu {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #000;
+      padding: 5px;
+      font-size: 12px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="login-container">
+    <input id="nickname" type="text" placeholder="Enter your nickname">
+    <button id="login-btn">Login</button>
+  </div>
+  <div id="game-container"></div>
+  <div id="chatbar-container">
+    <input id="chat-input" type="text" placeholder="Type a message...">
+    <button id="chat-send-btn">Send</button>
+  </div>
+  <div id="mini-map-container" class="mini-map"></div>
+  <div id="context-menu-container" class="context-menu">
+    <ul>
+      <li>Mute</li>
+    </ul>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/speakjs/speakClient.js"></script>
+  <script>
+    const socket = io();
+    let agents = [];
+    let dragging = false;
+    let dragAgent = null;
+    let startX, startY, startAgentX, startAgentY;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginContainer = document.getElementById('login-container');
+      const loginBtn = document.getElementById('login-btn');
+      const nicknameInput = document.getElementById('nickname');
+
+      loginBtn.addEventListener('click', () => {
+        const nickname = nicknameInput.value.trim();
+        if (nickname) {
+          socket.emit('login', nickname);
+          loginContainer.style.display = 'none';
+        }
+      });
+
+      socket.on('agent', (agent) => {
+        const agentElement = document.createElement('div');
+        agentElement.className = 'agent';
+        agentElement.style.backgroundImage = `url(${agent.image})`;
+        agentElement.style.left = `${agent.x}px`;
+        agentElement.style.top = `${agent.y}px`;
+
+        const nametagElement = document.createElement('div');
+        nametagElement.className = 'nametag';
+        nametagElement.textContent = agent.nickname;
+        agentElement.appendChild(nametagElement);
+
+        const speechBubbleElement = document.createElement('div');
+        speechBubbleElement.className = 'speech-bubble';
+        agentElement.appendChild(speechBubbleElement);
+
+        document.getElementById('game-container').appendChild(agentElement);
+        agents.push({ id: agent.id, element: agentElement });
+
+        // add agent to mini-map
+        const miniMapAgentElement = document.createElement('div');
+        miniMapAgentElement.className = 'mini-map-agent';
+        miniMapAgentElement.style.left = `${(agent.x / 400) * 150}px`;
+        miniMapAgentElement.style.top = `${(agent.y / 400) * 150}px`;
+        document.getElementById('mini-map-container').appendChild(miniMapAgentElement);
+      });
+
+      socket.on('move', (agent) => {
+        const agentElement = agents.find((a) => a.id === agent.id).element;
+        agentElement.style.left = `${agent.x}px`;
+        agentElement.style.top = `${agent.y}px`;
+
+        // update agent position in mini-map
+        const miniMapAgentElement = document.querySelector(`#mini-map-container .mini-map-agent[data-id="${agent.id}"]`);
+        if (miniMapAgentElement) {
+          miniMapAgentElement.style.left = `${(agent.x / 400) * 150}px`;
+          miniMapAgentElement.style.top = `${(agent.y / 400) * 150}px`;
+        }
+      });
+
+      socket.on('chat', (data) => {
+        const agentElement = agents.find((a) => a.id === data.id).element;
+        const speechBubbleElement = agentElement.querySelector('.speech-bubble');
+        if (data.message.startsWith('/image')) {
+          speechBubbleElement.className = 'speech-bubble';
+          speechBubbleElement.style.backgroundImage = `url(${data.message.substring('/image'.length)})`;
+          speechBubbleElement.style.padding = '0';
+        } else if (data.message.startsWith('/video')) {
+          speechBubbleElement.className = 'speech-bubble';
+          speechBubbleElement.innerHTML = `<video width="100" height="100" autoplay loop>
+                                            <source src="${data.message.substring('/video'.length)}" type="video/mp4">
+                                          </video>`;
+        } else {
+          speechBubbleElement.className = 'speech-bubble';
+          speechBubbleElement.textContent = data.message;
+          speak.play(data.message);
+        }
+        speechBubbleElement.style.display = 'block';
+        setTimeout(() => {
+          speechBubbleElement.style.display = 'none';
+        }, 2000);
+      });
+
+      document.getElementById('game-container').addEventListener('mousedown', (event) => {
+        const agentElement = event.target;
+        const agent = agents.find((a) => a.element === agentElement);
+        if (agent) {
+          dragging = true;
+          dragAgent = agent;
+          startX = event.clientX;
+          startY = event.clientY;
+          startAgentX = agentElement.offsetLeft;
+          startAgentY = agentElement.offsetTop;
+        }
+      });
+
+      document.addEventListener('mousemove',(event) => {
+        if (dragging) {
+          const deltaX = event.clientX - startX;
+          const deltaY = event.clientY - startY;
+          dragAgent.element.style.left = `${startAgentX + deltaX}px`;
+          dragAgent.element.style.top = `${startAgentY + deltaY}px`;
+          socket.emit('move', {
+            id: dragAgent.id,
+            x: startAgentX + deltaX,
+            y: startAgentY + deltaY
+          });
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        dragging = false;
+        dragAgent = null;
+      });
+
+      const chatInput = document.getElementById('chat-input');
+      const chatSendBtn = document.getElementById('chat-send-btn');
+
+      chatSendBtn.addEventListener('click', () => {
+        const message = chatInput.value.trim();
+        if (message) {
+          socket.emit('chat', {
+            id: socket.id,
+            message: message
+          });
+          chatInput.value = '';
+        }
+      });
+
+      document.getElementById('game-container').addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        const agentElement = event.target;
+        const agent = agents.find((a) => a.element === agentElement);
+        if (agent) {
+          const contextMenuContainer = document.getElementById('context-menu-container');
+          contextMenuContainer.style.top = `${event.clientY}px`;
+          contextMenuContainer.style.left = `${event.clientX}px`;
+          contextMenuContainer.style.display = 'block';
+        }
+      });
+
+      document.addEventListener('click', () => {
+        const contextMenuContainer = document.getElementById('context-menu-container');
+        contextMenuContainer.style.display = 'none';
+      });
+
+      document.getElementById('context-menu-container').addEventListener('click', (event) => {
+        if (event.target.textContent === 'Mute') {
+          console.log('Mute');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
