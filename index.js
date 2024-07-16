@@ -23,12 +23,25 @@ const images = [
   'https://images.shoutwiki.com/lego/5/5f/Return.jpg'
 ];
 
+const loginAttempts = {}; // store login attempts for each IP
+const maxLoginAttempts = 5; // max login attempts before blocking
+const loginBlockTime = 300000; // 5 minutes in milliseconds
+
 io.on('connection', (socket) => {
   console.log('a user connected');
+
+  const ip = socket.request.headers['x-forwarded-for'] || socket.request.connection.remoteAddress;
 
   // handle login
   socket.on('login', (nickname) => {
     if (nickname) {
+      // check if IP has exceeded max login attempts
+      if (loginAttempts[ip] && loginAttempts[ip].attempts >= maxLoginAttempts) {
+        loginAttempts[ip].blockedUntil = Date.now() + loginBlockTime;
+        socket.emit('error', 'You are blocked from logging in for 5 minutes due to excessive attempts.');
+        return;
+      }
+
       // create a new agent
       let agent = {
         id: socket.id,
@@ -37,11 +50,22 @@ io.on('connection', (socket) => {
         y: Math.random() * 400,
         image: images[Math.floor(Math.random() * images.length)]
       };
+
       socket.emit('agent', agent);
       // broadcast the agent to all other clients
       socket.broadcast.emit('agent', agent);
       // add agent to agents list
       agents.push(agent);
+
+      // reset login attempts
+      loginAttempts[ip] = { attempts: 0 };
+    } else {
+      // increment login attempts
+      if (!loginAttempts[ip]) {
+        loginAttempts[ip] = { attempts: 1 };
+      } else {
+        loginAttempts[ip].attempts++;
+      }
     }
   });
 
