@@ -15,34 +15,71 @@
       background-size: cover;
       cursor: move;
     }
+    .nametag {
+      position: absolute;
+      font-size: 12px;
+      color: white;
+      text-shadow: 1px 1px black;
+      top: -15px;
+      left: 0;
+      text-align: center;
+      width: 50px;
+    }
   </style>
 </head>
 <body>
-  <div id="clippy" class="clippy" draggable="true"></div>
+  <input id="nickname" type="text" placeholder="Enter your nickname">
+  <button id="login-btn">Login</button>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    let clippy = document.getElementById('clippy');
-    let startX, startY, initialX, initialY;
+    let clippy, nametag;
 
-    // Set random initial position
-    clippy.style.top = `${Math.floor(Math.random() * (window.innerHeight - 50))}px`;
-    clippy.style.left = `${Math.floor(Math.random() * (window.innerWidth - 50))}px`;
-
-    clippy.addEventListener('dragstart', (e) => {
-      startX = e.clientX;
-      startY = e.clientY;
-      initialX = clippy.offsetLeft;
-      initialY = clippy.offsetTop;
+    document.getElementById('login-btn').addEventListener('click', () => {
+      let nickname = document.getElementById('nickname').value;
+      socket.emit('login', nickname);
     });
 
-    clippy.addEventListener('dragend', (e) => {
-      let newX = initialX + (e.clientX - startX);
-      let newY = initialY + (e.clientY - startY);
-      clippy.style.top = `${newY}px`;
-      clippy.style.left = `${newX}px`;
-      socket.emit('move', { x: newX, y: newY });
+    socket.on('loginSuccess', (data) => {
+      clippy = document.createElement('div');
+      clippy.className = 'clippy';
+      clippy.style.top = `${data.y}px`;
+      clippy.style.left = `${data.x}px`;
+      document.body.appendChild(clippy);
+
+      nametag = document.createElement('div');
+      nametag.className = 'nametag';
+      nametag.textContent = data.nickname;
+      clippy.appendChild(nametag);
+
+      clippy.addEventListener('dragstart', (e) => {
+        startX = e.clientX;
+        startY = e.clientY;
+        initialX = clippy.offsetLeft;
+        initialY = clippy.offsetTop;
+      });
+
+      clippy.addEventListener('dragend', (e) => {
+        let newX = initialX + (e.clientX - startX);
+        let newY = initialY + (e.clientY - startY);
+        clippy.style.top = `${newY}px`;
+        clippy.style.left = `${newX}px`;
+        socket.emit('move', { x: newX, y: newY });
+      });
+    });
+
+    socket.on('newUser', (data) => {
+      let agent = document.createElement('div');
+      agent.className = 'clippy';
+      agent.style.top = `${data.y}px`;
+      agent.style.left = `${data.x}px`;
+      document.body.appendChild(agent);
+
+      let nametag = document.createElement('div');
+      nametag.className = 'nametag';
+      nametag.textContent = data.nickname;
+      agent.appendChild(nametag);
     });
 
     socket.on('update', (data) => {
@@ -52,6 +89,11 @@
         agent.className = 'clippy';
         agent.id = `agent-${data.id}`;
         document.body.appendChild(agent);
+
+        let nametag = document.createElement('div');
+        nametag.className = 'nametag';
+        nametag.textContent = agents[data.id].nickname;
+        agent.appendChild(nametag);
       }
       agent.style.top = `${data.y}px`;
       agent.style.left = `${data.x}px`;
