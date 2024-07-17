@@ -28,6 +28,10 @@ io.on('connection', (socket) => {
     agents[socket.id].y = data.y;
     socket.broadcast.emit('update', { id: socket.id, x: data.x, y: data.y });
   });
+
+  socket.on('chat', (message) => {
+    socket.broadcast.emit('chatMessage', { message, x: agents[socket.id].x, y: agents[socket.id].y });
+  });
 });
 
 server.listen(3000, () => {
