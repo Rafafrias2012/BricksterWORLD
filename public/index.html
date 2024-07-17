@@ -88,15 +88,45 @@
       text-align: center;
       width: 100%;
     }
-    .context-menu {
-      z-index: 1;
-      position: absolute;
-      background-color: silver;
-      box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px gray, inset 2px 2px #fff
-      padding-left: .2em;
-      padding-right: .2em;
-      display: none;
-    }
+.contextmenu_cont {
+    margin: 0;
+    position: fixed;
+    list-style-type: none;
+    z-index: 1;
+    background-color: silver;
+    padding-left: .2em;
+    padding-right: .2em;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px gray, inset 2px 2px #fff
+}
+
+.cmenu_item,
+.cmenu_disabled {
+    padding: 4px 22px;
+    position: relative;
+    font-size: 12px;
+}
+
+.cmenu_disabled {
+    color: grey;
+}
+
+.cmenu_item:hover {
+    color: #fff;
+    background-color: navy;
+    cursor: pointer
+}
+
+.cmenu_list:after {
+    position: absolute;
+    -webkit-user-select: none;
+    user-select: none;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding: 5px 5em 5px 5px;
+    font-family: Pixelated MS Sans Serif, Arial;
+    font-size: 11px;
+    list-style-type: none
+}
     .media-bubble {
       position: absolute;
       background-color: #ffffe7;
@@ -138,6 +168,7 @@ height: 12px;
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/speakjs/speakClient.js"></script>
+  <script src="https://bonziworld.org/lib/cmenu.js"></script>
   <script>
     const socket = io();
     let clippy, nametag, chatInput, sendBtn, contextMenu, mutedUsers = {};
@@ -174,17 +205,31 @@ height: 12px;
         socket.emit('move', { x: newX, y: newY });
       });
 
-      clippy.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        contextMenu = document.createElement('div');
-        contextMenu.className = 'context-menu';
-        contextMenu.innerHTML = `
-          <ul>
-            <li>Mute</li>
-            <li>Upload Media</li>
-          </ul>
-        `;
-        document.body.appendChild(contextMenu);
+clippy.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  let x = e.clientX;
+  let y = e.clientY;
+  let content = [
+    { name: 'Mute', callback: () => {
+      let targetNickname = nametag.textContent;
+      mutedUsers[targetNickname] = true;
+      socket.emit('mute', targetNickname);
+    } },
+    { name: 'Upload Media', callback: () => {
+      let input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*,video/*';
+      input.onchange = (e) => {
+        let file = input.files[0];
+        let formData = new FormData();
+        formData.append('file', file);
+        socket.emit('uploadMedia', formData);
+      };
+      input.click();
+    } }
+  ];
+  contextMenu = contextmenu(content, x, y, nametag.textContent);
+});
 
         let x = e.clientX;
         let y = e.clientY;
