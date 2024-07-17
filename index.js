@@ -7,6 +7,7 @@ const path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 
 let agents = {};
+let mutedUsers = {};
 
 io.on('connection', (socket) => {
   console.log('a user connected');
@@ -30,7 +31,14 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chat', (message) => {
-    socket.broadcast.emit('chatMessage', { message, x: agents[socket.id].x, y: agents[socket.id].y });
+    if (!mutedUsers[agents[socket.id].nickname]) {
+      socket.broadcast.emit('chatMessage', { message, x: agents[socket.id].x, y: agents[socket.id].y });
+    }
+  });
+
+  socket.on('mute', (targetNickname) => {
+    mutedUsers[targetNickname] = true;
+    socket.broadcast.emit('mute', targetNickname);
   });
 });
 
