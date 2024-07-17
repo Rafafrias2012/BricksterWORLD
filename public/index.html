@@ -229,37 +229,7 @@ clippy.addEventListener('contextmenu', (e) => {
     } }
   ];
   contextMenu = contextmenu(content, x, y, nametag.textContent);
-});
-
-        let x = e.clientX;
-        let y = e.clientY;
-        contextMenu.style.top = `${y}px`;
-        contextMenu.style.left = `${x}px`;
-        contextMenu.style.display = 'block';
-
-        contextMenu.addEventListener('click', (e) => {
-          if (e.target.tagName === 'LI') {
-            let targetNickname = nametag.textContent;
-            if (e.target.textContent === 'Mute') {
-              mutedUsers[targetNickname] = true;
-              socket.emit('mute', targetNickname);
-            } else if (e.target.textContent === 'Upload Media') {
-              let input = document.createElement('input');
-              input.type = 'file';
-              input.accept = 'image/*,video/*';
-              input.onchange = (e) => {
-                let file = input.files[0];
-                let formData = new FormData();
-                formData.append('file', file);
-                socket.emit('uploadMedia', formData);
-              };
-              input.click();
-            }
-          }
-          contextMenu.remove();
-        });
-      });
-    });
+  });
 
     socket.on('newUser', (data) => {
       let agent = document.createElement('div');
