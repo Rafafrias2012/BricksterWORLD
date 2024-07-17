@@ -7,7 +7,7 @@
       margin: 0;
       padding: 0;
     }
-   .agent {
+    #clippy {
       position: absolute;
       top: 0;
       left: 0;
@@ -20,41 +20,38 @@
   </style>
 </head>
 <body>
-  <div id="game-container"></div>
+  <div id="clippy" draggable="true"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    let agents = [];
+    let clippy = document.getElementById('clippy');
+    let startX, startY, initialX, initialY;
 
-    socket.on('updateAgents', (agents) => {
-      agents.forEach((agent) => {
-        const agentElement = document.createElement('div');
-        agentElement.className = 'agent';
-        agentElement.style.top = `${agent.y}px`;
-        agentElement.style.left = `${agent.x}px`;
-        document.getElementById('game-container').appendChild(agentElement);
-      });
+    clippy.addEventListener('dragstart', (e) => {
+      startX = e.clientX;
+      startY = e.clientY;
+      initialX = clippy.offsetLeft;
+      initialY = clippy.offsetTop;
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const gameContainer = document.getElementById('game-container');
-      gameContainer.addEventListener('mousedown', (event) => {
-        const agent = {
-          id: Math.random(),
-          x: event.clientX,
-          y: event.clientY,
-        };
-        socket.emit('newAgent', agent);
-      });
+    clippy.addEventListener('dragend', (e) => {
+      let newX = initialX + (e.clientX - startX);
+      let newY = initialY + (e.clientY - startY);
+      clippy.style.top = `${newY}px`;
+      clippy.style.left = `${newX}px`;
+      socket.emit('move', { x: newX, y: newY });
+    });
 
-      gameContainer.addEventListener('mousemove', (event) => {
-        const agent = agents.find((a) => a.id === event.target.dataset.agentId);
-        if (agent) {
-          agent.x = event.clientX;
-          agent.y = event.clientY;
-          socket.emit('moveAgent', agent);
-        }
+    socket.on('update', (agents) => {
+      Object.keys(agents).forEach((id) => {
+        let agent = document.createElement('div');
+        agent.className = 'agent';
+        agent.style.top = `${agents[id].y}px`;
+        agent.style.left = `${agents[id].x}px`;
+        agent.style.backgroundImage = 'url(https://upload.wikimedia.org/wikipedia/en/d/d8/Windows_11_Clippy_paperclip_emoji.png)';
+        agent.style.backgroundSize = 'cover';
+        document.body.appendChild(agent);
       });
     });
   </script>
