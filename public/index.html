@@ -50,23 +50,33 @@
       font-weight: 700
     }
    .speech-bubble {
-      position: absolute;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 200px;
-      z-index: 1;
+      width: calc(100% - (100% % 12));
+      height: calc(100% - (100% % 12));
+      background-color: #ffffe7;
+      padding: 12px;
+      box-sizing: border-box;
     }
    .speech-bubble::before {
       content: "";
       position: absolute;
-      top: 50%;
-      left: -10px;
-      transform: translateY(-50%);
-      border-style: solid;
-      border-width: 10px 10px 10px 0;
-      border-color: transparent #ccc transparent transparent;
+      top: 0;
+      left: 0;
+      width: 12px;
+      height: 12px;
+      background-image: url(https://git.computernewb.com/computernewb/MSAgent-Chat/raw/branch/master/msagent.js/res/wordballoon.png);
+      background-size: 12px 12px;
+    }
+    .speech-bubble::after {
+     /* right side corner */
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background-image: url(https://git.computernewb.com/computernewb/MSAgent-Chat/raw/branch/master/msagent.js/res/wordballoon.png);
+  background-size: 12px 12px;
+  transform: rotate(90deg);
     }
     .context-menu {
       z-index: 1;
