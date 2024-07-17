@@ -5,28 +5,18 @@ const io = require('socket.io')(server);
 
 app.use(express.static('public'));
 
-let agents = [];
+let agents = {};
 
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  socket.on('newAgent', (agent) => {
-    agents.push(agent);
-    io.emit('updateAgents', agents);
-  });
-
-  socket.on('moveAgent', (agent) => {
-    agents = agents.map((a) => {
-      if (a.id === agent.id) {
-        return agent;
-      }
-      return a;
-    });
-    io.emit('updateAgents', agents);
-  });
-
   socket.on('disconnect', () => {
     console.log('a user disconnected');
+  });
+
+  socket.on('move', (data) => {
+    agents[socket.id] = data;
+    socket.broadcast.emit('update', agents);
   });
 });
 
