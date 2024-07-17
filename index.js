@@ -12,11 +12,13 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('a user disconnected');
+    delete agents[socket.id];
+    socket.broadcast.emit('remove', socket.id);
   });
 
   socket.on('move', (data) => {
     agents[socket.id] = data;
-    socket.broadcast.emit('update', agents);
+    socket.broadcast.emit('update', { id: socket.id, x: data.x, y: data.y });
   });
 });
 
