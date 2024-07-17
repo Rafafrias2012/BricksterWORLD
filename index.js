@@ -32,13 +32,29 @@ io.on('connection', (socket) => {
 
   socket.on('chat', (message) => {
     if (!mutedUsers[agents[socket.id].nickname]) {
-      socket.broadcast.emit('chatMessage', { message, x: agents[socket.id].x, y: agents[socket.id].y });
+      socket.broadcast.emit('chatMessage', { message, x: agents[socket.id].x, y: agents[socket.id].y, nickname: agents[socket.id].nickname });
     }
   });
 
   socket.on('mute', (targetNickname) => {
     mutedUsers[targetNickname] = true;
     socket.broadcast.emit('mute', targetNickname);
+  });
+
+  socket.on('uploadMedia', (formData) => {
+    // Handle media upload here
+    // For example, you can use the `multer` middleware to handle file uploads
+    const multer = require('multer');
+    const upload = multer({ dest: './uploads/' });
+    upload(formData, (err) => {
+      if (err) {
+        console.error(err);
+      } else {
+        const url = `${formData.file.name}`;
+        const alt = formData.file.name;
+        socket.broadcast.emit('mediaMessage', { url, alt, x: agents[socket.id].x, y: agents[socket.id].y, nickname: agents[socket.id].nickname });
+      }
+    });
   });
 });
 
