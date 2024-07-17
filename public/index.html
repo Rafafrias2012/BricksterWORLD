@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Clippy MMO</title>
+  <title>ClippyChat 98</title>
+  <link rel="stylesheet" href="https://unpkg.com/98.css">
   <style>
     body {
       margin: 0;
       padding: 0;
     }
-    .clippy {
+   .clippy {
       position: absolute;
       width: 50px;
       height: 50px;
@@ -15,7 +16,7 @@
       background-size: cover;
       cursor: move;
     }
-    .nametag {
+   .nametag {
       position: absolute;
       font-size: 12px;
       color: white;
@@ -25,16 +26,50 @@
       text-align: center;
       width: 50px;
     }
+   .chatbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 30px;
+      background-color: #f0f0f0;
+      border-top: 1px solid #ccc;
+      padding: 10px;
+    }
+   .speech-bubble {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 200px;
+      z-index: 1;
+    }
+   .speech-bubble::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: -10px;
+      transform: translateY(-50%);
+      border-style: solid;
+      border-width: 10px 10px 10px 0;
+      border-color: transparent #ccc transparent transparent;
+    }
   </style>
 </head>
 <body>
   <input id="nickname" type="text" placeholder="Enter your nickname">
   <button id="login-btn">Login</button>
+  <div class="chatbar">
+    <input id="chat-input" type="text" placeholder="Type a message...">
+    <button id="send-btn">Send</button>
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/speakjs/speakClient.js"></script>
   <script>
     const socket = io();
-    let clippy, nametag;
+    let clippy, nametag, chatInput, sendBtn;
 
     document.getElementById('login-btn').addEventListener('click', () => {
       let nickname = document.getElementById('nickname').value;
@@ -104,6 +139,34 @@
       if (agent) {
         agent.remove();
       }
+    });
+
+    chatInput = document.getElementById('chat-input');
+    sendBtn = document.getElementById('send-btn');
+
+    sendBtn.addEventListener('click', () => {
+      let message = chatInput.value;
+      if (message) {
+        socket.emit('chat', message);
+        chatInput.value = '';
+      }
+      speak.play(message);
+    });
+
+    socket.on('chatMessage', (data) => {
+      let messageBubble = document.createElement('div');
+      messageBubble.className = 'speech-bubble';
+      messageBubble.textContent = data.message;
+      document.body.appendChild(messageBubble);
+
+      let x = data.x + 25;
+      let y = data.y + 50;
+      messageBubble.style.top = `${y}px`;
+      messageBubble.style.left = `${x}px`;
+
+      setTimeout(() => {
+        messageBubble.remove();
+      }, 3000);
     });
   </script>
 </body>
