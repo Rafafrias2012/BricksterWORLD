@@ -7,10 +7,8 @@
       margin: 0;
       padding: 0;
     }
-    #clippy {
+    .clippy {
       position: absolute;
-      top: 0;
-      left: 0;
       width: 50px;
       height: 50px;
       background-image: url('https://upload.wikimedia.org/wikipedia/en/d/d8/Windows_11_Clippy_paperclip_emoji.png');
@@ -20,13 +18,17 @@
   </style>
 </head>
 <body>
-  <div id="clippy" draggable="true"></div>
+  <div id="clippy" class="clippy" draggable="true"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
     let clippy = document.getElementById('clippy');
     let startX, startY, initialX, initialY;
+
+    // Set random initial position
+    clippy.style.top = `${Math.floor(Math.random() * (window.innerHeight - 50))}px`;
+    clippy.style.left = `${Math.floor(Math.random() * (window.innerWidth - 50))}px`;
 
     clippy.addEventListener('dragstart', (e) => {
       startX = e.clientX;
@@ -43,16 +45,23 @@
       socket.emit('move', { x: newX, y: newY });
     });
 
-    socket.on('update', (agents) => {
-      Object.keys(agents).forEach((id) => {
-        let agent = document.createElement('div');
-        agent.className = 'agent';
-        agent.style.top = `${agents[id].y}px`;
-        agent.style.left = `${agents[id].x}px`;
-        agent.style.backgroundImage = 'url(https://upload.wikimedia.org/wikipedia/en/d/d8/Windows_11_Clippy_paperclip_emoji.png)';
-        agent.style.backgroundSize = 'cover';
+    socket.on('update', (data) => {
+      let agent = document.getElementById(`agent-${data.id}`);
+      if (!agent) {
+        agent = document.createElement('div');
+        agent.className = 'clippy';
+        agent.id = `agent-${data.id}`;
         document.body.appendChild(agent);
-      });
+      }
+      agent.style.top = `${data.y}px`;
+      agent.style.left = `${data.x}px`;
+    });
+
+    socket.on('remove', (id) => {
+      let agent = document.getElementById(`agent-${id}`);
+      if (agent) {
+        agent.remove();
+      }
     });
   </script>
 </body>
