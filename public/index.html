@@ -97,6 +97,35 @@
       padding-right: .2em;
       display: none;
     }
+    .media-bubble {
+      position: absolute;
+      background-color: #ffffe7;
+      padding: 12px;
+      box-sizing: border-box;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    .media-bubble::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 12px;
+      height: 12px;
+      background-image: url(https://git.computernewb.com/computernewb/MSAgent-Chat/raw/branch/master/msagent.js/res/wordballoon.png);
+      background-size: 12px 12px;
+    }
+    .media-bubble::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 12px;
+height: 12px;
+      background-image: url(https://git.computernewb.com/computernewb/MSAgent-Chat/raw/branch/master/msagent.js/res/wordballoon.png);
+      background-size: 12px 12px;
+      transform: rotate(90deg);
+    }
   </style>
 </head>
 <body>
@@ -152,6 +181,7 @@
         contextMenu.innerHTML = `
           <ul>
             <li>Mute</li>
+            <li>Upload Media</li>
           </ul>
         `;
         document.body.appendChild(contextMenu);
@@ -168,6 +198,17 @@
             if (e.target.textContent === 'Mute') {
               mutedUsers[targetNickname] = true;
               socket.emit('mute', targetNickname);
+            } else if (e.target.textContent === 'Upload Media') {
+              let input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'image/*,video/*';
+              input.onchange = (e) => {
+                let file = input.files[0];
+                let formData = new FormData();
+                formData.append('file', file);
+                socket.emit('uploadMedia', formData);
+              };
+              input.click();
             }
           }
           contextMenu.remove();
@@ -216,7 +257,7 @@
     sendBtn = document.getElementById('send-btn');
 
     sendBtn.addEventListener('click', () => {
-      let message = chatInput.value;
+let message = chatInput.value;
       if (message) {
         socket.emit('chat', message);
         chatInput.value = '';
@@ -238,6 +279,24 @@
 
         setTimeout(() => {
           messageBubble.remove();
+        }, 3000);
+      }
+    });
+
+    socket.on('mediaMessage', (data) => {
+      if (!mutedUsers[data.nickname]) {
+        let mediaBubble = document.createElement('div');
+        mediaBubble.className = 'media-bubble';
+        mediaBubble.innerHTML = `<img src="${data.url}" alt="${data.alt}">`;
+        document.body.appendChild(mediaBubble);
+
+        let x = data.x + 25;
+        let y = data.y + 50;
+        mediaBubble.style.top = `${y}px`;
+        mediaBubble.style.left = `${x}px`;
+
+        setTimeout(() => {
+          mediaBubble.remove();
         }, 3000);
       }
     });
