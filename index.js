@@ -2,8 +2,9 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+const path = require('path');
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 let agents = {};
 
@@ -17,7 +18,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('login', (nickname) => {
-    agents[socket.id] = { nickname, x: Math.floor(Math.random() * (window.innerWidth - 50)), y: Math.floor(Math.random() * (window.innerHeight - 50)) };
+    agents[socket.id] = { nickname, x: Math.floor(Math.random() * 500), y: Math.floor(Math.random() * 500) };
     socket.emit('loginSuccess', agents[socket.id]);
     socket.broadcast.emit('newUser', agents[socket.id]);
   });
