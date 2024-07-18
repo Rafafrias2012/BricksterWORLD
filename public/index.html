@@ -85,31 +85,34 @@
       border-radius: 50%;
     }
     .context-menu {
-      position: absolute;
-      background-color: #C0C0C0; /* light gray background */
-      border: 1px solid #808080; /* dark gray border */
-      padding: 5px;
-      font-size: 12px;
-      font-family: Tahoma, sans-serif; /* Windows 98 font */
-      display: none;
-      border-radius: 0; /* no rounded corners */
-      box-shadow: none; /* no shadow */
+      z-index: 1;
+      background-color: silver;
+      padding-left: .2em;
+      padding-right: .2em;
+      box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px gray, inset 2px 2px #fff
     }
 
     .context-menu ul {
-      list-style: none;
       margin: 0;
       padding: 0;
+      list-style: none
     }
 
     .context-menu li {
-      margin: 0;
-      padding: 2px 5px;
-      border-bottom: 1px solid #808080; /* dark gray border between items */
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      margin-top: 2px;
+      margin-bottom: 2px;
+      padding: 5px 5em 5px 5px;
+      font-family: Pixelated MS Sans Serif, Arial;
+      font-size: 11px;
+      list-style-type: none    
     }
 
     .context-menu li:hover {
-      background-color: #F0F0F0; /* light gray hover background */
+      color: #fff;
+      background-color: navy
     }
 
     .context-menu li:last-child {
