@@ -1,32 +1,173 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ClippyChat 98</title>
+  <title>BricksterWORLD</title>
   <link rel="stylesheet" href="https://unpkg.com/98.css">
   <style>
     body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       background-color: #3a6ea5;
-      font-size: 11px
     }
-    .clippy {
+    .agent {
       position: absolute;
-      width: 50px;
-      height: 50px;
-      background-image: url('https://upload.wikimedia.org/wikipedia/en/d/d8/Windows_11_Clippy_paperclip_emoji.png');
-      background-size: cover;
+      width: 113.5px;
+      height: 187px;
+      background-size: 113.5px 187px;
+      background-repeat: no-repeat;
+      cursor: move;
+    }
+    .custom-agent {
+      position: absolute;
+      width: 113.5px;
+      height: 187px;
+      background-size: 113.5px 187px;
+      background-repeat: no-repeat;
       cursor: move;
     }
     .nametag {
       position: absolute;
       font-size: 12px;
-      color: white;
-      text-shadow: 1px 1px black;
+      font-family: Tahoma; /* Windows 98's default font */
+      color: #008000; /* A bright green color reminiscent of Windows 98 */
+      background-color: #C0C0C0; /* A light gray color similar to Windows 98's UI */
+      border: 1px solid #808080; /* A dark gray border to give it a 3D look */
+      padding: 2px 4px;
       top: -15px;
       left: 0;
       text-align: center;
       width: 50px;
+      border-radius: 2px; /* To give it a slightly rounded look */
     }
-    .chatbar {
+    .admin-nametag {
+      color: red;
+    }
+    .speech-bubble {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #ddd; /* changed border color to a lighter gray */
+      padding: 10px; /* increased padding for a more modern feel */
+      border-radius: 20px; /* increased border radius for a softer look */
+      font-size: 14px; /* increased font size for better readability */
+      top: -30px;
+      left: 0;
+      text-align: center;
+      width: 150px; /* increased width to accommodate longer text */
+      display: none;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* added a subtle box shadow */
+    }
+    #chat-input {
+      flex-grow: 1;
+      height: 100%;
+      margin-left: 4px;
+      margin-right: 4px
+    }
+
+    .mini-map {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 150px;
+      height: 150px;
+      border: 1px solid #000;
+      background-color: #fff;
+    }
+    .mini-map-agent {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #000;
+      border-radius: 50%;
+    }
+    .context-menu {
+      position: absolute;
+      background-color: #C0C0C0; /* light gray background */
+      border: 1px solid #808080; /* dark gray border */
+      padding: 5px;
+      font-size: 12px;
+      font-family: Tahoma, sans-serif; /* Windows 98 font */
+      display: none;
+      border-radius: 0; /* no rounded corners */
+      box-shadow: none; /* no shadow */
+    }
+
+    .context-menu ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .context-menu li {
+      margin: 0;
+      padding: 2px 5px;
+      border-bottom: 1px solid #808080; /* dark gray border between items */
+    }
+
+    .context-menu li:hover {
+      background-color: #F0F0F0; /* light gray hover background */
+    }
+
+    .context-menu li:last-child {
+      border-bottom: none; /* no border on last item */
+    }
+    #room-info-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #000;
+      font-size: 12px;
+    }
+
+    #room-id, #room-info, #member-count {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .disconnect-dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #C0C0C0; /* beige background */
+      border: 1px solid #808080; /* gray border */
+      padding: 20px;
+      border-radius: 0; /* no rounded corners */
+      box-shadow: none; /* no shadow */
+    }
+
+    .disconnect-dialog button {
+      margin: 10px;
+      padding: 10px 20px;
+      border: 1px solid #808080; /* gray border */
+      background-color: #C0C0C0; /* beige background */
+      color: #000; /* black text */
+      cursor: pointer;
+      font-family: Arial, sans-serif; /* Windows 98 font */
+      font-size: 10pt; /* smaller font size */
+    }
+
+    .disconnect-dialog button:hover {
+      background-color: #F0F0F0; /* light gray hover */
+    }
+
+    .announce-window {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #000;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #chatbar-container {
       background-color: silver;
       width: 100%;
       height: 3vh;
@@ -39,282 +180,347 @@
       right: 0;
       box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px gray, inset 2px 2px #fff
     }
-    #chat-input {
-      flex-grow: 1;
-      height: 100%;
-      margin-left: 4px;
-      margin-right: 4px
-    }
-    #send-btn {
+
+    #chat-send-btn {
       margin-right: 4px;
       font-weight: 700
-    }
-    .speech-bubble {
-      position: absolute;
-      background-color: #ffffe7;
-      padding: 12px;
-      box-sizing: border-box;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    }
-    .speech-bubble::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 12px;
-      height: 12px;
-      background-image: url(https://git.computernewb.com/computernewb/MSAgent-Chat/raw/branch/master/msagent.js/res/wordballoon.png);
-      background-size: 12px 12px;
-    }
-    .speech-bubble::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 12px;
-      height: 12px;
-      background-image: url(https://git.computernewb.com/computernewb/MSAgent-Chat/raw/branch/master/msagent.js/res/wordballoon.png);
-      background-size: 12px 12px;
-      transform: rotate(90deg);
-    }
-    .bubble-nametag {
-      position: absolute;
-      font-size: 12px;
-      color: white;
-      text-shadow: 1px 1px black;
-      bottom: -20px;
-      left: 0;
-      text-align: center;
-      width: 100%;
-    }
-.contextmenu_cont {
-    margin: 0;
-    position: fixed;
-    list-style-type: none;
-    z-index: 1;
-    background-color: silver;
-    padding-left: .2em;
-    padding-right: .2em;
-    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px gray, inset 2px 2px #fff
-}
-
-.cmenu_item,
-.cmenu_disabled {
-    padding: 4px 22px;
-    position: relative;
-    font-size: 12px;
-}
-
-.cmenu_disabled {
-    color: grey;
-}
-
-.cmenu_item:hover {
-    color: #fff;
-    background-color: navy;
-    cursor: pointer
-}
-
-.cmenu_list:after {
-    position: absolute;
-    -webkit-user-select: none;
-    user-select: none;
-    margin-top: 2px;
-    margin-bottom: 2px;
-    padding: 5px 5em 5px 5px;
-    font-family: Pixelated MS Sans Serif, Arial;
-    font-size: 11px;
-    list-style-type: none
-}
-    .media-bubble {
-      position: absolute;
-      background-color: #ffffe7;
-      padding: 12px;
-      box-sizing: border-box;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    }
-    .media-bubble::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 12px;
-      height: 12px;
-      background-image: url(https://git.computernewb.com/computernewb/MSAgent-Chat/raw/branch/master/msagent.js/res/wordballoon.png);
-      background-size: 12px 12px;
-    }
-    .media-bubble::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 12px;
-height: 12px;
-      background-image: url(https://git.computernewb.com/computernewb/MSAgent-Chat/raw/branch/master/msagent.js/res/wordballoon.png);
-      background-size: 12px 12px;
-      transform: rotate(90deg);
     }
   </style>
 </head>
 <body>
-  <input id="nickname" type="text" placeholder="Enter your nickname">
-  <button id="login-btn">Login</button>
-  <div class="chatbar">
+  <div id="login-container">
+    <input id="nickname" type="text" placeholder="Enter your nickname">
+    <button id="login-btn">Login</button>
+  </div>
+  <div id="game-container"></div>
+  <div id="chatbar-container">
     <input id="chat-input" type="text" placeholder="Type a message...">
-    <button id="send-btn">Send</button>
+    <button id="chat-send-btn">Send</button>
+  </div>
+  <div id="room-info-container">
+    <span id="room-id">Room ID: <span id="room-id-value"></span></span>
+    <span id="room-info">Room Info: <span id="room-info-value"></span></span>
+    <span id="member-count">Members: <span id="member-count-value">0</span></span>
+  </div>
+  <div id="mini-map-container" class="mini-map"></div>
+  <div id="context-menu-container" class="context-menu">
+    <ul>
+      <li>Mute</li>
+      <li>Hey! Name!</li>
+    </ul>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/speakjs/speakClient.js"></script>
-  <script src="https://bonziworld.org/lib/cmenu.js"></script>
+  
   <script>
     const socket = io();
-    let clippy, nametag, chatInput, sendBtn, contextMenu, mutedUsers = {};
+    let agents = [];
+    let dragging = false;
+    let dragAgent = null;
+    let startX, startY, startAgentX, startAgentY;
 
-    document.getElementById('login-btn').addEventListener('click', () => {
-      let nickname = document.getElementById('nickname').value;
-      socket.emit('login', nickname);
-    });
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginContainer = document.getElementById('login-container');
+      const loginBtn = document.getElementById('login-btn');
+      const nicknameInput = document.getElementById('nickname');
 
-    socket.on('loginSuccess', (data) => {
-      clippy = document.createElement('div');
-      clippy.className = 'clippy';
-      clippy.style.top = `${data.y}px`;
-      clippy.style.left = `${data.x}px`;
-      document.body.appendChild(clippy);
-
-      nametag = document.createElement('div');
-      nametag.className = 'bubble-nametag';
-      nametag.textContent = data.nickname;
-      clippy.appendChild(nametag);
-
-      clippy.addEventListener('dragstart', (e) => {
-        startX = e.clientX;
-        startY = e.clientY;
-        initialX = clippy.offsetLeft;
-        initialY = clippy.offsetTop;
+      loginBtn.addEventListener('click', () => {
+        const nickname = nicknameInput.value.trim();
+        if (nickname) {
+          socket.emit('login', nickname);
+          loginContainer.style.display = 'none';
+        }
       });
 
-      clippy.addEventListener('dragend', (e) => {
-        let newX = initialX + (e.clientX - startX);
-        let newY = initialY + (e.clientY - startY);
-        clippy.style.top = `${newY}px`;
-        clippy.style.left = `${newX}px`;
-        socket.emit('move', { x: newX, y: newY });
+      class MSWindow {
+        constructor(title, html, buttons, x, y, w, h) {
+          this.title = title;
+          this.html = html;
+          this.buttons = buttons;
+          this.x = x;
+          this.y = y;
+          this.w = w;
+          this.h = h;
+
+          this.element = document.createElement('div');
+          this.element.className = 'swindow';
+          this.element.style.position = 'absolute';
+          this.element.style.top = `${y}px`;
+          this.element.style.left = `${x}px`;
+          this.element.style.width = `${w}px`;
+          this.element.style.height = `${h}px`;
+          this.element.style.border = '1px solid #000';
+          this.element.style.backgroundColor = '#fff';
+
+          const titleBar = document.createElement('div');
+          titleBar.className = 'title-bar';
+          titleBar.textContent = title;
+          this.element.appendChild(titleBar);
+
+          const closeButton = document.createElement('button');
+          closeButton.className = 'close-button';
+          closeButton.textContent = 'X';
+          closeButton.addEventListener('click', () => {
+            this.close();
+          });
+          titleBar.appendChild(closeButton);
+
+          this.element.addEventListener('mousedown', (event) => {
+            if (event.target === titleBar) {
+              this.dragging = true;
+              this.startX = event.clientX;
+              this.startY = event.clientY;
+              this.startLeft = this.element.offsetLeft;
+              this.startTop = this.element.offsetTop;
+            }
+          });
+
+          document.addEventListener('mousemove', (event) => {
+            if (this.dragging) {
+              const deltaX = event.clientX - this.startX;
+              const deltaY = event.clientY - this.startY;
+              this.element.style.left = `${this.startLeft + deltaX}px`;
+              this.element.style.top = `${this.startTop + deltaY}px`;
+            }
+          });
+
+          document.addEventListener('mouseup', () => {
+            this.dragging = false;
+          });
+
+          const content = document.createElement('div');
+          content.className = 'content';
+          content.innerHTML = html;
+          this.element.appendChild(content);
+
+          const buttonBar = document.createElement('div');
+          buttonBar.className = 'button-bar';
+          buttons.forEach((button) => {
+            const buttonElement = document.createElement('button');
+            buttonElement.textContent = button;
+            buttonElement.addEventListener('click', () => {
+              // handle button click event
+            });
+            buttonBar.appendChild(buttonElement);
+          });
+          this.element.appendChild(buttonBar);
+
+          document.body.appendChild(this.element);
+        }
+
+        close() {
+          this.element.remove();
+        }
+      }
+
+      socket.on('agent', (agent) => {
+        const agentElement = document.createElement('div');
+        agentElement.className = 'agent';
+        agentElement.style.backgroundImage = `url(${agent.image})`;
+        agentElement.style.left = `${agent.x}px`;
+        agentElement.style.top = `${agent.y}px`;
+
+        const nametagElement = document.createElement('div');
+        nametagElement.className = 'nametag' + (agent.admin ? ' admin-nametag' : '');
+        nametagElement.textContent = agent.nickname;
+        agentElement.appendChild(nametagElement);
+
+        const speechBubbleElement = document.createElement('div');
+        speechBubbleElement.className = 'speech-bubble';
+        agentElement.appendChild(speechBubbleElement);
+
+        document.getElementById('game-container').appendChild(agentElement);
+        agents.push({ id: agent.id, element: agentElement });
+
+        // add agent to mini-map
+        const miniMapAgentElement = document.createElement('div');
+        miniMapAgentElement.className = 'mini-map-agent';
+        miniMapAgentElement.style.left = `${(agent.x / 400) * 150}px`;
+        miniMapAgentElement.style.top = `${(agent.y / 400) * 150}px`;
+        miniMapAgentElement.setAttribute('data-id', agent.id);
+        document.getElementById('mini-map-container').appendChild(miniMapAgentElement);
       });
 
-clippy.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-  let x = e.clientX;
-  let y = e.clientY;
-  let content = [
-    { name: 'Mute', callback: () => {
-      let targetNickname = nametag.textContent;
-      mutedUsers[targetNickname] = true;
-      socket.emit('mute', targetNickname);
-    } },
-    { name: 'Upload Media', callback: () => {
-      let input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*,video/*';
-      input.onchange = (e) => {
-        let file = input.files[0];
-        let formData = new FormData();
-        formData.append('file', file);
-        socket.emit('uploadMedia', formData);
-      };
-      input.click();
-    } }
-  ];
-  contextMenu = contextmenu(content, x, y, nametag.textContent);
+      socket.on('move', (agent) => {
+        const agentElement = agents.find((a) => a.id === agent.id).element;
+        agentElement.style.left = `${agent.x}px`;
+        agentElement.style.top = `${agent.y}px`;
+
+        // update agent position in mini-map
+        const miniMapAgentElement = document.querySelector(`#mini-map-container .mini-map-agent[data-id="${agent.id}"]`);
+        if (miniMapAgentElement) {
+          miniMapAgentElement.style.left = `${(agent.x / 400) * 150}px`;
+          miniMapAgentElement.style.top = `${(agent.y / 400) * 150}px`;
+        }
+      });
+
+      socket.on('chat', (data) => {
+          const agentElement = agents.find((a) => a.id === data.id).element;
+          const speechBubbleElement = agentElement.querySelector('.speech-bubble');
+          if (data.message.startsWith('/image')) {
+              speechBubbleElement.className = 'peech-bubble';
+              speechBubbleElement.style.backgroundImage = `url(${data.message.substring('/image'.length)})`;
+              speechBubbleElement.style.padding = '0';
+          } else if (data.message.startsWith('/video')) {
+              speechBubbleElement.className = 'peech-bubble';
+              speechBubbleElement.innerHTML = `<video width="100" height="100" autoplayloop>
+                                            <source src="${data.message.substring('/video'.length)}" type="video/mp4">
+                                          </video>`;
+          } else if (data.message.startsWith('/announce')) {
+              const announceWindow = document.createElement('div');
+              announceWindow.className = 'announce-window';
+              announceWindow.textContent = data.message.substring('/announce'.length);
+              announceWindow.style.top = `${agentElement.offsetTop + 20}px`;
+              announceWindow.style.left = `${agentElement.offsetLeft + 20}px`;
+              document.body.appendChild(announceWindow);
+              setTimeout(() => {
+                  announceWindow.remove();
+              }, 5000);
+            } else if (data.message.startsWith('/crossagent')) {
+            const img = data.message.substring('/customagent'.length);
+            const customAgentElement = document.createElement('div');
+            customAgentElement.className = 'custom-agent';
+            customAgentElement.style.backgroundImage = `url(${img})`;
+            customAgentElement.style.width = '50px';
+            customAgentElement.style.height = '50px';
+            agentElement.appendChild(customAgentElement);
+          } else {
+              speechBubbleElement.className = 'peech-bubble';
+              speechBubbleElement.textContent = data.message;
+              speak.play(data.message);
+          }
+          speechBubbleElement.style.display = 'block';
+          setTimeout(() => {
+              speechBubbleElement.style.display = 'none';
+          }, 2000);
+          speechBubbleElement.innerHTML += `<button class="reply-btn">Reply</button>`;
+          const replyBtn = speechBubbleElement.querySelector('.reply-btn');
+          replyBtn.addEventListener('click', () => {
+              const replyInput = document.createElement('input');
+              replyInput.type = 'text';
+              replyInput.placeholder = 'Type a reply...';
+              speechBubbleElement.appendChild(replyInput);
+              replyInput.addEventListener('keypress', (event) => {
+                  if (event.key === 'Enter') {
+                      const replyMessage = replyInput.value.trim();
+                      if (replyMessage) {
+                          socket.emit('chat', {
+                              id: data.id,
+                              message: `@${data.nickname} ${replyMessage}`
+                          });
+                          replyInput.remove();
+                      }
+                  }
+              });
+          });
+      });
+      socket.on('roomInfo', (data) => {
+        document.getElementById('room-id-value').textContent = data.roomId;
+        document.getElementById('room-info-value').textContent = data.roomInfo;
+        document.getElementById('member-count-value').textContent = data.memberCount;
+      });
+
+      socket.on('disconnect', () => {
+        const disconnectDialog = document.createElement('div');
+        disconnectDialog.className = 'disconnect-dialog';
+        disconnectDialog.textContent = 'OOPS! AN ERROR OCCCOURED! 404';
+
+        const reconnectBtn = document.createElement('button');
+        reconnectBtn.textContent = 'Reconnect';
+        reconnectBtn.addEventListener('click', () => {
+          socket.emit('login', nicknameInput.value.trim());
+        });
+
+        const quitBtn = document.createElement('button');
+        quitBtn.textContent = 'Quit';
+        quitBtn.addEventListener('click', () => {
+          window.location.href = '/';
+        });
+
+        disconnectDialog.appendChild(reconnectBtn);
+        disconnectDialog.appendChild(quitBtn);
+
+        document.body.appendChild(disconnectDialog);
+      });
+
+      document.getElementById('game-container').addEventListener('mousedown', (event) => {
+        const agentElement = event.target;
+        const agent = agents.find((a) => a.element === agentElement);
+        if (agent) {
+          dragging = true;
+          dragAgent = agent;
+          startX = event.clientX;
+          startY = event.clientY;
+          startAgentX = agentElement.offsetLeft;
+          startAgentY = agentElement.offsetTop;
+        }
+      });
+
+      document.addEventListener('mousemove',(event) => {
+        if (dragging) {
+          const deltaX = event.clientX - startX;
+          const deltaY = event.clientY - startY;
+          dragAgent.element.style.left = `${startAgentX + deltaX}px`;
+          dragAgent.element.style.top = `${startAgentY + deltaY}px`;
+          socket.emit('move', {
+            id: dragAgent.id,
+            x: startAgentX + deltaX,
+            y: startAgentY + deltaY
+          });
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        dragging = false;
+        dragAgent = null;
+      });
+
+      const chatInput = document.getElementById('chat-input');
+      const chatSendBtn = document.getElementById('chat-send-btn');
+
+      chatSendBtn.addEventListener('click', () => {
+        const message = chatInput.value.trim();
+        if (message) {
+          socket.emit('chat', {
+            id: socket.id,
+            message: message
+          });
+          chatInput.value = '';
+        }
+      });
+
+      document.getElementById('game-container').addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        const agentElement = event.target;
+        const agent = agents.find((a) => a.element === agentElement);
+        if (agent) {
+          const contextMenuContainer = document.getElementById('context-menu-container');
+          contextMenuContainer.style.top = `${event.clientY}px`;
+          contextMenuContainer.style.left = `${event.clientX}px`;
+          contextMenuContainer.style.display = 'block';
+        }
+      });
+
+      document.addEventListener('click', () => {
+        const contextMenuContainer = document.getElementById('context-menu-container');
+        contextMenuContainer.style.display = 'none';
+      });
+
+      document.getElementById('context-menu-container').addEventListener('click', (event) => {
+        if (event.target.textContent === 'Mute') {
+          socket.emit('Mute', agents.find((a) => a.element === event.target.parentNode.parentNode).id);
+        } else if (event.target.textContent === 'Hey! Name!') {
+          const data = agents.find((a) => a.element === event.target.parentNode.parentNode);
+          if (data) {
+            socket.emit('chat', {
+              id: data.id,
+              message: `Hey!, ${data.nickname}!`
+            });
+          }
+        }
+      });
   });
-
-    socket.on('newUser', (data) => {
-      let agent = document.createElement('div');
-      agent.className = 'clippy';
-      agent.style.top = `${data.y}px`;
-      agent.style.left = `${data.x}px`;
-      document.body.appendChild(agent);
-
-      let nametag = document.createElement('div');
-      nametag.className = 'bubble-nametag';
-      nametag.textContent = data.nickname;
-      agent.appendChild(nametag);
-    });
-
-    socket.on('update', (data) => {
-      let agent = document.getElementById(`agent-${data.id}`);
-      if (!agent) {
-        agent = document.createElement('div');
-        agent.className = 'clippy';
-        agent.id = `agent-${data.id}`;
-        document.body.appendChild(agent);
-
-        let nametag = document.createElement('div');
-        nametag.className = 'bubble-nametag';
-        nametag.textContent = agents[data.id].nickname;
-        agent.appendChild(nametag);
-      }
-      agent.style.top = `${data.y}px`;
-      agent.style.left = `${data.x}px`;
-    });
-
-    socket.on('remove', (id) => {
-      let agent = document.getElementById(`agent-${id}`);
-      if (agent) {
-        agent.remove();
-      }
-    });
-
-    chatInput = document.getElementById('chat-input');
-    sendBtn = document.getElementById('send-btn');
-
-    sendBtn.addEventListener('click', () => {
-let message = chatInput.value;
-      if (message) {
-        socket.emit('chat', message);
-        chatInput.value = '';
-      }
-      speak.play(message);
-    });
-
-    socket.on('chatMessage', (data) => {
-      if (!mutedUsers[data.nickname]) {
-        let messageBubble = document.createElement('div');
-        messageBubble.className = 'speech-bubble';
-        messageBubble.textContent = data.message;
-        document.body.appendChild(messageBubble);
-
-        let x = data.x + 25;
-        let y = data.y + 50;
-        messageBubble.style.top = `${y}px`;
-        messageBubble.style.left = `${x}px`;
-
-        setTimeout(() => {
-          messageBubble.remove();
-        }, 3000);
-      }
-    });
-
-    socket.on('mediaMessage', (data) => {
-      if (!mutedUsers[data.nickname]) {
-        let mediaBubble = document.createElement('div');
-        mediaBubble.className = 'media-bubble';
-        mediaBubble.innerHTML = `<img src="${data.url}" alt="${data.alt}">`;
-        document.body.appendChild(mediaBubble);
-
-        let x = data.x + 25;
-        let y = data.y + 50;
-        mediaBubble.style.top = `${y}px`;
-        mediaBubble.style.left = `${x}px`;
-
-        setTimeout(() => {
-          mediaBubble.remove();
-        }, 3000);
-      }
-    });
   </script>
 </body>
 </html>
