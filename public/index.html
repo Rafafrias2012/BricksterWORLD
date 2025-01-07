@@ -359,64 +359,84 @@
       });
 
       socket.on('chat', (data) => {
-          const agentElement = agents.find((a) => a.id === data.id).element;
-          const speechBubbleElement = agentElement.querySelector('.speech-bubble');
-          if (data.message.startsWith('/image')) {
-              speechBubbleElement.className = 'peech-bubble';
-              speechBubbleElement.style.backgroundImage = `url(${data.message.substring('/image'.length)})`;
-              speechBubbleElement.style.padding = '0';
-          } else if (data.message.startsWith('/video')) {
-              speechBubbleElement.className = 'peech-bubble';
-              speechBubbleElement.innerHTML = `<video width="100" height="100" autoplayloop>
-                                            <source src="${data.message.substring('/video'.length)}" type="video/mp4">
+        const agentElement = agents.find((a) => a.id === data.id)?.element;
+        if (!agentElement) return; // Guard against null agent
+        
+        const speechBubbleElement = agentElement.querySelector('.speech-bubble');
+        if (!speechBubbleElement) return; // Guard against null speech bubble
+
+        if (data.message.startsWith('/image')) {
+            speechBubbleElement.className = 'speech-bubble';
+            speechBubbleElement.style.backgroundImage = `url(${data.message.substring('/image'.length).trim()})`;
+            speechBubbleElement.style.padding = '0';
+        } else if (data.message.startsWith('/video')) {
+            speechBubbleElement.className = 'speech-bubble';
+            speechBubbleElement.innerHTML = `<video width="100" height="100" autoplay loop>
+                                            <source src="${data.message.substring('/video'.length).trim()}" type="video/mp4">
                                           </video>`;
-          } else if (data.message.startsWith('/announce')) {
-              const announceWindow = document.createElement('div');
-              announceWindow.className = 'announce-window';
-              announceWindow.textContent = data.message.substring('/announce'.length);
-              announceWindow.style.top = `${agentElement.offsetTop + 20}px`;
-              announceWindow.style.left = `${agentElement.offsetLeft + 20}px`;
-              document.body.appendChild(announceWindow);
-              setTimeout(() => {
-                  announceWindow.remove();
-              }, 5000);
-            } else if (data.message.startsWith('/crossagent')) {
-            const img = data.message.substring('/customagent'.length);
+        } else if (data.message.startsWith('/announce')) {
+            const announceWindow = document.createElement('div');
+            announceWindow.className = 'announce-window';
+            announceWindow.textContent = data.message.substring('/announce'.length).trim();
+            announceWindow.style.top = `${agentElement.offsetTop + 20}px`;
+            announceWindow.style.left = `${agentElement.offsetLeft + 20}px`;
+            document.body.appendChild(announceWindow);
+            setTimeout(() => {
+                announceWindow.remove();
+            }, 5000);
+        } else if (data.message.startsWith('/crossagent')) {
+            const img = data.message.substring('/crossagent'.length).trim();
             const customAgentElement = document.createElement('div');
             customAgentElement.className = 'custom-agent';
             customAgentElement.style.backgroundImage = `url(${img})`;
             customAgentElement.style.width = '50px';
             customAgentElement.style.height = '50px';
             agentElement.appendChild(customAgentElement);
-          } else {
-              speechBubbleElement.className = 'peech-bubble';
-              speechBubbleElement.textContent = data.message;
-              speak.play(data.message);
-          }
-          speechBubbleElement.style.display = 'block';
-          setTimeout(() => {
-              speechBubbleElement.style.display = 'none';
-          }, 2000);
-          speechBubbleElement.innerHTML += `<button class="reply-btn">Reply</button>`;
-          const replyBtn = speechBubbleElement.querySelector('.reply-btn');
-          replyBtn.addEventListener('click', () => {
-              const replyInput = document.createElement('input');
-              replyInput.type = 'text';
-              replyInput.placeholder = 'Type a reply...';
-              speechBubbleElement.appendChild(replyInput);
-              replyInput.addEventListener('keypress', (event) => {
-                  if (event.key === 'Enter') {
-                      const replyMessage = replyInput.value.trim();
-                      if (replyMessage) {
-                          socket.emit('chat', {
-                              id: data.id,
-                              message: `@${data.nickname} ${replyMessage}`
-                          });
-                          replyInput.remove();
-                      }
-                  }
-              });
-          });
+        } else {
+            speechBubbleElement.className = 'speech-bubble';
+            speechBubbleElement.textContent = data.message;
+            speak.play(data.message);
+        }
+
+        speechBubbleElement.style.display = 'block';
+        
+        // Clear any existing reply button
+        const existingReplyBtn = speechBubbleElement.querySelector('.reply-btn');
+        if (existingReplyBtn) {
+            existingReplyBtn.remove();
+        }
+
+        // Add reply button
+        const replyBtn = document.createElement('button');
+        replyBtn.className = 'reply-btn';
+        replyBtn.textContent = 'Reply';
+        speechBubbleElement.appendChild(replyBtn);
+
+        replyBtn.addEventListener('click', () => {
+            const replyInput = document.createElement('input');
+            replyInput.type = 'text';
+            replyInput.placeholder = 'Type a reply...';
+            speechBubbleElement.appendChild(replyInput);
+            replyInput.focus();
+
+            replyInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    const replyMessage = replyInput.value.trim();
+                    if (replyMessage) {
+                        socket.emit('chat', {
+                            id: data.id,
+                            message: `@${data.nickname} ${replyMessage}`
+                        });
+                        replyInput.remove();
+                    }
+                }
+            });
+        });
+
+        // Hide speech bubble after delay
+        setTimeout(() => {
+            speechBubbleElement.style.display = 'none';
+        }, 2000);
       });
       socket.on('roomInfo', (data) => {
         document.getElementById('room-id-value').textContent = data.roomId;
